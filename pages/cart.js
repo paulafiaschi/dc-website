@@ -2,9 +2,29 @@ import { useSelector, useDispatch } from "react-redux";
 import Image from "next/image";
 import { incrementQuantity, decrementQuantity, removeFromCart } from "./redux/cart.slice";
 
+import getStripe from "../lib/getStripe";
+
 import styles from "../styles/Cart.module.scss";
 
 export default function Cart() {
+  async function handleCheckout() {
+    const stripe = await getStripe();
+    console.log("handle checkout");
+    const { error } = await stripe.redirectToCheckout({
+      lineItems: [
+        {
+          price: `price_1MD1S6GDi8cV7qeJ3uwoluIS`,
+          quantity: 1,
+        },
+      ],
+      mode: "payment",
+      successUrl: `http://localhost:3000/success`,
+      cancelUrl: `http://localhost:3000/cancel`,
+      customerEmail: "customer@email.com",
+    });
+    console.warn(error.message);
+  }
+
   // Extracting cart state from redux store
   const cart = useSelector((state) => state.cart);
   console.log(cart);
@@ -68,6 +88,8 @@ export default function Cart() {
             </aside>
           </>
         )}
+
+        <button onClick={handleCheckout}>Go to checkout</button>
       </div>
     </>
   );
